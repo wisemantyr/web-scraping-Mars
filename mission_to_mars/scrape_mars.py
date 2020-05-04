@@ -2,17 +2,29 @@ from bs4 import BeautifulSoup as bs
 from splinter import Browser
 import re
 import pandas as pd
+from flask import Flask
+import pymongo
+import time
+
+app = Flask(__name__)
+conn = 'mongodb://localhost:27017'
+client = pymongo.MongoClient(conn)
+db = client.mars_db
 
 results = {"news_results": [], "featured_image_url" : "", "mars_weather": "", "mars_facts_html": "", "hemisphere_image_urls": []}
 
-def scrape():
+def init_browser():
+    executable_path = {"executable_path": "chromedriver.exe"}
+    return Browser("chrome", **executable_path, headless=False)
+
+def scrape_mars():
     ### Mars News ###
 
     #navigate to site
+    browser = init_browser()
     newsURL = "https://mars.nasa.gov/news/?page=0&per_page=40&order=publish_date+desc%2Ccreated_at+desc&search=&category=19%2C165%2C184%2C204&blank_scope=Latest"
-    executable_path = {"executable_path": "chromedriver.exe"}
-    browser = Browser("chrome", **executable_path, headless=False)
     browser.visit(newsURL)
+    time.sleep(10)
     #get HTML and create soup object
     html = browser.html
     soup = bs(html, "html.parser")
@@ -44,10 +56,10 @@ def scrape():
     ### Featured Image ###
 
     #navigate to site
+    browser = init_browser()
     SpaceImagesURL = "https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars"
-    executable_path = {"executable_path": "chromedriver.exe"}
-    browser = Browser("chrome", **executable_path, headless=False)
     browser.visit(SpaceImagesURL)
+    time.sleep(10)
     #get next URL to visit
     elements = browser.find_by_id("full_image")
     ImageInfoLink = elements["data-link"]
@@ -69,10 +81,10 @@ def scrape():
     ### Mars Weather ###
 
     #visit site
+    browser = init_browser()
     twitterURL = "https://twitter.com/marswxreport?lang=en"
-    executable_path = {"executable_path": "chromedriver.exe"}
-    browser = Browser("chrome", **executable_path, headless=False)
     browser.visit(twitterURL)
+    time.sleep(10)
     #get HTML and create soup object
     twitterHTML = browser.html
     twitterSoup = bs(twitterHTML, "html.parser")
@@ -101,10 +113,10 @@ def scrape():
     ### Mars Facts ###
 
     #visit site
+    browser = init_browser()
     factsURL = "https://space-facts.com/mars/"
-    executable_path = {"executable_path": "chromedriver.exe"}
-    browser = Browser("chrome", **executable_path, headless=False)
     browser.visit(factsURL)
+    time.sleep(10)
     #get tables
     tables = pd.read_html(factsURL)
     #save desire table
@@ -118,10 +130,10 @@ def scrape():
     ### Hemispheres ###
 
     #visit site
+    browser = init_browser()
     hemiURL = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
-    executable_path = {"executable_path": "chromedriver.exe"}
-    browser = Browser("chrome", **executable_path, headless=False)
     browser.visit(hemiURL)
+    time.sleep(10)
     #save relevent elements
     elements = browser.links.find_by_partial_text("Hemisphere")
     #extract titles and urls
@@ -142,5 +154,9 @@ def scrape():
     #update results dict
     for (x, y) in zippedHemis:
         results["hemisphere_image_urls"].append({"title": x, "image_url": y})
+    
+    db.mars_data.drop()
+    return results, db.mars_data.insert_one(results)
 
-    return results
+if __name__ == "__main__":
+    app.run(debug=True)

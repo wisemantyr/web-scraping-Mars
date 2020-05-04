@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Mars</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="jumbotron text-center">
+      <h1>Mars</h1>
+      <p><a class="btn btn-primary btn-lg" href="/scrape" role="button">Get Data!</a></p>
+    </div>
+    <h2>Current weather</h2>
+    <p>{{ mars_data.mars_weather }}</p>
+    <h2>Latest News</h2>
+    <h4>{{ mars_data.news_results[0].news_title }} :</h4>
+    <p>{{ mars_data.news_results[0].news_p }}</p>
+    <h2>Featured Image</h2>
+    <p>mars_data.featured_img_url</p>
+    <h2>Facts</h2>
+    {{ mars_data.mars_facts_html }}
+    <h2>Hemispheres</h2>
+    <ul style="list-style: none;">
+      {% for item in mars_data.hemisphere_image_urls %}
+        <li>{{ item.title }}: {{ item.image_url }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+
+</html>
