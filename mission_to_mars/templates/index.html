@@ -20,9 +20,9 @@
     <h4>{{ mars_data.news_results[0].news_title }} :</h4>
     <p>{{ mars_data.news_results[0].news_p }}</p>
     <h2>Featured Image</h2>
-    <p>mars_data.featured_img_url</p>
+    <img src="https://photojournal.jpl.nasa.gov/jpeg/PIA22949.jpg">
     <h2>Facts</h2>
-    {{ mars_data.mars_facts_html }}
+    {{ mars_data.mars_facts_html|safe }}
     <h2>Hemispheres</h2>
     <ul style="list-style: none;">
       {% for item in mars_data.hemisphere_image_urls %}
